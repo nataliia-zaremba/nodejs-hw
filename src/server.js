@@ -1,41 +1,25 @@
-import 'dotenv/config';
 import express from 'express';
+import 'dotenv/config';
 import cors from 'cors';
-import pinoHttp from 'pino-http';
+import { connectMongoDB } from './db/connectMongoDB.js';
+import studentsRouter from './routes/notesRoutes.js';
+import { errorHandler } from './middleware/errorHandler.js';
 
 const app = express();
-const PORT = process.env.PORT || 3030;
+const PORT = process.env.PORT ?? 3030;
 
-// middleware
-app.use(cors());
-app.use(express.json());
-app.use(pinoHttp());
+/* Middleware */
+app.use(cors()); // дозволяємо CORS
+app.use(express.json()); // парсимо JSON у body
 
-// маршрути
-app.get('/notes', (req, res) => {
-  res.status(200).json({ message: 'Retrieved all notes' });
-});
+/* Маршрути */
+app.use('/api/students', studentsRouter);
 
-app.get('/notes/:noteId', (req, res) => {
-  const { noteId } = req.params;
-  res.status(200).json({ message: `Retrieved note with ID: ${noteId}` });
-});
+/* Обробка помилок (останнім) */
+app.use(errorHandler);
 
-// тестовий маршрут для помилок
-app.get('/test-error', (req, res) => {
-  throw new Error('Simulated server error');
-});
-
-// обробка 404
-app.use((req, res) => {
-  res.status(404).json({ message: 'Route not found' });
-});
-
-// обробка помилок
-app.use((err, req, res, next) => {
-  console.error(err.message);
-  res.status(500).json({ message: err.message || 'Internal server error' });
-});
+// підключення до MongoDB
+await connectMongoDB();
 
 // запуск сервера
 app.listen(PORT, () => {
