@@ -1,8 +1,8 @@
 import createError from 'http-errors';
 import { Note } from '../models/note.js';
 
-// Отримати список усіх нотаток
-export const getNotes = async (req, res, next) => {
+// GET /notes - Отримати список усіх нотаток
+export const getAllNotes = async (req, res, next) => {
   try {
     const notes = await Note.find();
     res.status(200).json(notes);
@@ -11,7 +11,7 @@ export const getNotes = async (req, res, next) => {
   }
 };
 
-// Отримати одну нотатку за id
+// GET /notes/:noteId - Отримати одну нотатку за id
 export const getNoteById = async (req, res, next) => {
   try {
     const { noteId } = req.params;
@@ -31,7 +31,7 @@ export const getNoteById = async (req, res, next) => {
   }
 };
 
-//  Створити нову нотатку
+// POST /notes - Створити нову нотатку
 export const createNote = async (req, res, next) => {
   try {
     const { title, content, tag } = req.body;
@@ -47,7 +47,7 @@ export const createNote = async (req, res, next) => {
   }
 };
 
-//  Оновити нотатку
+// PATCH /notes/:noteId - Оновити нотатку
 export const updateNote = async (req, res, next) => {
   try {
     const { noteId } = req.params;
@@ -73,7 +73,7 @@ export const updateNote = async (req, res, next) => {
   }
 };
 
-// Видалити нотатку
+// DELETE /notes/:noteId - Видалити нотатку
 export const deleteNote = async (req, res, next) => {
   try {
     const { noteId } = req.params;
@@ -84,7 +84,7 @@ export const deleteNote = async (req, res, next) => {
       return next(createError(404, 'Note not found'));
     }
 
-    res.status(204).send();
+    res.status(200).json(deletedNote);
   } catch (error) {
     if (error.name === 'CastError') {
       return next(createError(400, 'Invalid note ID'));

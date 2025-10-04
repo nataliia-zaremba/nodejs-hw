@@ -1,21 +1,21 @@
-import express from 'express';
+import { Router } from 'express';
 import {
-  getNotes,
+  getAllNotes,
   getNoteById,
   createNote,
   updateNote,
   deleteNote,
 } from '../controllers/notesController.js';
 
-const router = express.Router();
+const router = Router();
 
-//  отримати всі нотатки
-router.get('/', getNotes);
+// отримати всі нотатки
+router.get('/', getAllNotes);
 
 // отримати одну нотатку
 router.get('/:noteId', getNoteById);
 
-// створити нову нотатку
+//  створити нову нотатку
 router.post('/', createNote);
 
 // оновити нотатку

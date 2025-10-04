@@ -2,21 +2,25 @@ import express from 'express';
 import 'dotenv/config';
 import cors from 'cors';
 import { connectMongoDB } from './db/connectMongoDB.js';
-import studentsRouter from './routes/notesRoutes.js';
+import notesRouter from './routes/notesRoutes.js';
+import { logger } from './middleware/logger.js';
+import { notFoundHandler } from './middleware/notFoundHandler.js';
 import { errorHandler } from './middleware/errorHandler.js';
 
 const app = express();
 const PORT = process.env.PORT ?? 3030;
 
 /* Middleware */
+app.use(logger); // логування запитів
 app.use(cors()); // дозволяємо CORS
 app.use(express.json()); // парсимо JSON у body
 
 /* Маршрути */
-app.use('/api/students', studentsRouter);
+app.use('/api/notes', notesRouter);
 
-/* Обробка помилок (останнім) */
-app.use(errorHandler);
+/* Обробка помилок */
+app.use(notFoundHandler); // обробка 404
+app.use(errorHandler); // обробка інших помилок
 
 // підключення до MongoDB
 await connectMongoDB();
