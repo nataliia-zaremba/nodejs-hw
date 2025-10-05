@@ -6,22 +6,28 @@ import {
   updateNote,
   deleteNote,
 } from '../controllers/notesController.js';
+import {
+  getAllNotesSchema,
+  noteIdSchema,
+  createNoteSchema,
+  updateNoteSchema,
+} from '../validations/notesValidation.js';
 
 const router = Router();
 
-// отримати всі нотатки
-router.get('/', getAllNotes);
+// GET /notes - отримати всі нотатки з валідацією query параметрів
+router.get('/', getAllNotesSchema, getAllNotes);
 
-// отримати одну нотатку
-router.get('/:noteId', getNoteById);
+// GET /notes/:noteId - отримати одну нотатку з валідацією noteId
+router.get('/:noteId', noteIdSchema, getNoteById);
 
-//  створити нову нотатку
-router.post('/', createNote);
+// POST /notes - створити нову нотатку з валідацією body
+router.post('/', createNoteSchema, createNote);
 
-// оновити нотатку
-router.patch('/:noteId', updateNote);
+// PATCH /notes/:noteId - оновити нотатку з валідацією noteId та body
+router.patch('/:noteId', updateNoteSchema, updateNote);
 
-//  видалити нотатку
-router.delete('/:noteId', deleteNote);
+// DELETE /notes/:noteId - видалити нотатку з валідацією noteId
+router.delete('/:noteId', noteIdSchema, deleteNote);
 
 export default router;

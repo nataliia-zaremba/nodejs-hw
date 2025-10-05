@@ -1,11 +1,48 @@
 import createError from 'http-errors';
 import { Note } from '../models/note.js';
 
-// GET /notes - Отримати список усіх нотаток
+// GET /notes - Отримати список усіх нотаток з пагінацією, фільтрацією та пошуком
 export const getAllNotes = async (req, res, next) => {
   try {
-    const notes = await Note.find();
-    res.status(200).json(notes);
+    const { tag, search, page = 1, perPage = 10 } = req.query;
+
+    // Будуємо фільтр
+    const filter = {};
+
+    // Фільтрація по тегу
+    if (tag) {
+      filter.tag = tag;
+    }
+
+    // Пошук по title та content
+    if (search) {
+      filter.$or = [
+        { title: { $regex: search, $options: 'i' } },
+        { content: { $regex: search, $options: 'i' } },
+      ];
+    }
+
+    // Пагінація
+    const pageNum = parseInt(page, 10);
+    const perPageNum = parseInt(perPage, 10);
+    const skip = (pageNum - 1) * perPageNum;
+
+    // Отримуємо нотатки з фільтрацією та пагінацією
+    const notes = await Note.find(filter)
+      .skip(skip)
+      .limit(perPageNum)
+      .sort({ createdAt: -1 }); // Сортування за датою створення (новіші спочатку)
+
+    // Отримуємо загальну кількість нотаток для пагінації
+    const totalNotes = await Note.countDocuments(filter);
+
+    res.status(200).json({
+      page: pageNum,
+      perPage: perPageNum,
+      totalNotes,
+      totalPages: Math.ceil(totalNotes / perPageNum),
+      notes,
+    });
   } catch (error) {
     next(createError(500, error.message));
   }
