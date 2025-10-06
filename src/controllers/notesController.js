@@ -6,41 +6,36 @@ export const getAllNotes = async (req, res, next) => {
   try {
     const { tag, search, page = 1, perPage = 10 } = req.query;
 
-    // Будуємо фільтр
-    const filter = {};
+    // Будуємо запит через ланцюжок методів Mongoose
+    let query = Note.find();
 
     // Фільтрація по тегу
     if (tag) {
-      filter.tag = tag;
+      query = query.where('tag').equals(tag);
     }
 
     // Пошук по title та content
     if (search) {
-      filter.$or = [
+      query = query.or([
         { title: { $regex: search, $options: 'i' } },
         { content: { $regex: search, $options: 'i' } },
-      ];
+      ]);
     }
 
     // Пагінація
-    const pageNum = parseInt(page, 10);
-    const perPageNum = parseInt(perPage, 10);
-    const skip = (pageNum - 1) * perPageNum;
+    const skip = (page - 1) * perPage;
 
-    // Отримуємо нотатки з фільтрацією та пагінацією
-    const notes = await Note.find(filter)
-      .skip(skip)
-      .limit(perPageNum)
-      .sort({ createdAt: -1 }); // Сортування за датою створення (новіші спочатку)
-
-    // Отримуємо загальну кількість нотаток для пагінації
-    const totalNotes = await Note.countDocuments(filter);
+    // Паралельне виконання запитів
+    const [notes, totalNotes] = await Promise.all([
+      query.clone().skip(skip).limit(perPage).sort({ createdAt: -1 }), // Сортування за датою створення (новіші спочатку)
+      Note.countDocuments(query.getFilter()),
+    ]);
 
     res.status(200).json({
-      page: pageNum,
-      perPage: perPageNum,
+      page,
+      perPage,
       totalNotes,
-      totalPages: Math.ceil(totalNotes / perPageNum),
+      totalPages: Math.ceil(totalNotes / perPage),
       notes,
     });
   } catch (error) {
