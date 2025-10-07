@@ -17,10 +17,10 @@ app.use(cors()); // дозволяємо CORS
 app.use(express.json()); // парсимо JSON у body
 
 /* Маршрути */
-app.use('/api/notes', notesRouter);
+app.use(notesRouter);
 
 /* Обробка помилок */
-app.use(errors()); // обробка помилок celebrate - ДОДАНО ЦЕЙ РЯДОК!
+app.use(errors()); // обробка помилок celebrate
 app.use(notFoundHandler); // обробка 404
 app.use(errorHandler); // обробка інших помилок
 
