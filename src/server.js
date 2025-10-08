@@ -20,8 +20,8 @@ app.use(express.json()); // парсимо JSON у body
 app.use(notesRouter);
 
 /* Обробка помилок */
-app.use(errors()); // обробка помилок celebrate
 app.use(notFoundHandler); // обробка 404
+app.use(errors()); // обробка помилок celebrate
 app.use(errorHandler); // обробка інших помилок
 
 // підключення до MongoDB
