@@ -1,23 +1,27 @@
 import express from 'express';
 import 'dotenv/config';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
 import { errors } from 'celebrate';
 import { connectMongoDB } from './db/connectMongoDB.js';
 import notesRouter from './routes/notesRoutes.js';
+import authRouter from './routes/authRoutes.js';
 import { logger } from './middleware/logger.js';
 import { notFoundHandler } from './middleware/notFoundHandler.js';
 import { errorHandler } from './middleware/errorHandler.js';
 
 const app = express();
-const PORT = process.env.PORT ?? 3030;
+const PORT = process.env.PORT ?? 3000;
 
 /* Middleware */
 app.use(logger); // логування запитів
 app.use(cors()); // дозволяємо CORS
 app.use(express.json()); // парсимо JSON у body
+app.use(cookieParser()); // парсимо cookies
 
 /* Маршрути */
-app.use(notesRouter);
+app.use(authRouter); // маршрути аутентифікації
+app.use(notesRouter); // маршрути нотаток (захищені через authenticate)
 
 /* Обробка помилок */
 app.use(notFoundHandler); // обробка 404
