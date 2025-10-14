@@ -7,23 +7,32 @@ const noteSchema = new Schema(
   {
     title: {
       type: String,
-      required: true,
+      required: true, // обов'язкове поле
       trim: true,
     },
     content: {
       type: String,
-      default: '',
+      required: false, // явно позначено як необов'язкове
+      default: '', // за замовчуванням порожній рядок
       trim: true,
     },
     tag: {
       type: String,
       enum: TAGS,
-      default: 'Todo',
+      default: 'Todo', // за замовчуванням Todo
+    },
+    userId: {
+      type: Schema.Types.ObjectId,
+      required: true, // обов'язкове поле
+      ref: 'User',
     },
   },
   {
-    timestamps: true,
+    timestamps: true, // автоматично додає createdAt і updatedAt
   },
 );
 
-export const Note = model('Note', noteSchema, 'notes');
+// Текстовий індекс для полів title та content (для пошуку)
+noteSchema.index({ title: 'text', content: 'text' });
+
+export const Note = model('Note', noteSchema);

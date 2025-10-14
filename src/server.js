@@ -21,7 +21,7 @@ app.use(cookieParser()); // парсимо cookies
 
 /* Маршрути */
 app.use(authRouter); // маршрути аутентифікації
-app.use(notesRouter); // маршрути нотаток (захищені через authenticate)
+app.use('/api', notesRouter); // маршрути нотаток (захищені через authenticate)
 
 /* Обробка помилок */
 app.use(notFoundHandler); // обробка 404
