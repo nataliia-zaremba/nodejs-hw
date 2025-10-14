@@ -2,11 +2,7 @@ import crypto from 'crypto';
 import { Session } from '../models/session.js';
 import { FIFTEEN_MINUTES, ONE_DAY } from '../constants/time.js';
 
-/**
- * Створює сесію для користувача
- * @param {string} userId - ID користувача
- * @returns {Promise<Session>} - Створена сесія
- */
+
 export const createSession = async (userId) => {
   // Генеруємо токени
   const accessToken = crypto.randomBytes(32).toString('base64');
@@ -28,11 +24,6 @@ export const createSession = async (userId) => {
   return session;
 };
 
-/**
- * Встановлює кукі сесії у відповідь
- * @param {Object} res - Express response об'єкт
- * @param {Session} session - Об'єкт сесії
- */
 export const setSessionCookies = (res, session) => {
   // Загальні параметри для всіх кукі
   const cookieOptions = {

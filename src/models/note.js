@@ -7,22 +7,22 @@ const noteSchema = new Schema(
   {
     title: {
       type: String,
-      required: true, // обов'язкове поле
+      required: true,
       trim: true,
     },
     content: {
       type: String,
-      default: '', // необов'язкове, за замовчуванням порожній рядок
+      default: '',
       trim: true,
     },
     tag: {
       type: String,
       enum: TAGS,
-      default: 'Todo', // необов'язкове, за замовчуванням Todo
+      default: 'Todo',
     },
   },
   {
-    timestamps: true, // автоматично додає createdAt і updatedAt
+    timestamps: true,
   },
 );
 
