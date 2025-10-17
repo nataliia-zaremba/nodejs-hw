@@ -1,4 +1,4 @@
-import { Joi, Segments, celebrate } from 'celebrate';
+import { Joi, Segments } from 'celebrate';
 import { isValidObjectId } from 'mongoose';
 import { TAGS } from '../constants/tags.js';
 
@@ -11,17 +11,17 @@ const objectIdValidator = (value, helpers) => {
 };
 
 // Валідація noteId параметра
-export const noteIdSchema = celebrate({
+export const noteIdSchema = {
   [Segments.PARAMS]: Joi.object({
     noteId: Joi.string().custom(objectIdValidator).required().messages({
       'any.invalid': 'Invalid note ID',
       'any.required': 'Note ID is required',
     }),
   }),
-});
+};
 
 // Валідація query параметрів для GET /notes
-export const getAllNotesSchema = celebrate({
+export const getAllNotesSchema = {
   [Segments.QUERY]: Joi.object({
     page: Joi.number().integer().min(1).default(1).messages({
       'number.base': 'Page must be a number',
@@ -41,10 +41,10 @@ export const getAllNotesSchema = celebrate({
       'string.base': 'Search must be a string',
     }),
   }),
-});
+};
 
 // Валідація для створення нотатки (POST /notes)
-export const createNoteSchema = celebrate({
+export const createNoteSchema = {
   [Segments.BODY]: Joi.object({
     title: Joi.string().min(1).required().messages({
       'string.empty': 'Title cannot be empty',
@@ -62,10 +62,10 @@ export const createNoteSchema = celebrate({
         'any.required': 'Tag is required',
       }),
   }),
-});
+};
 
 // Валідація для оновлення нотатки (PATCH /notes/:noteId)
-export const updateNoteSchema = celebrate({
+export const updateNoteSchema = {
   [Segments.PARAMS]: Joi.object({
     noteId: Joi.string().custom(objectIdValidator).required().messages({
       'any.invalid': 'Invalid note ID',
@@ -86,4 +86,4 @@ export const updateNoteSchema = celebrate({
         'any.only': `Tag must be one of: ${TAGS.join(', ')}`,
       }),
   }).min(1), // Хоча б одне поле має бути присутнім
-});
+};

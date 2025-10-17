@@ -1,4 +1,5 @@
 import express from 'express';
+import { celebrate } from 'celebrate';
 import {
   noteIdSchema,
   getAllNotesSchema,
@@ -12,24 +13,25 @@ import {
   updateNote,
   deleteNote,
 } from '../controllers/notesController.js';
+import { authenticate } from '../middleware/authenticate.js';
 
 const router = express.Router();
 
 /* ---- Routes ---- */
 
 // Отримати всі нотатки
-router.get('/', getAllNotesSchema, getAllNotes);
+router.get('/', authenticate, celebrate(getAllNotesSchema), getAllNotes);
 
 // Отримати одну нотатку за ID
-router.get('/:noteId', noteIdSchema, getNoteById);
+router.get('/:noteId', authenticate, celebrate(noteIdSchema), getNoteById);
 
 // Створити нову нотатку
-router.post('/', createNoteSchema, createNote);
+router.post('/', authenticate, celebrate(createNoteSchema), createNote);
 
 // Оновити нотатку
-router.patch('/:noteId', updateNoteSchema, updateNote);
+router.patch('/:noteId', authenticate, celebrate(updateNoteSchema), updateNote);
 
 // Видалити нотатку
-router.delete('/:noteId', noteIdSchema, deleteNote);
+router.delete('/:noteId', authenticate, celebrate(noteIdSchema), deleteNote);
 
 export default router;

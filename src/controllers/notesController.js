@@ -1,34 +1,31 @@
 import createError from 'http-errors';
 import { Note } from '../models/note.js';
 
-// GET /notes - Отримати список усіх нотаток з пагінацією, фільтрацією та пошуком
+// GET /notes - Отримати список нотаток користувача
 export const getAllNotes = async (req, res, next) => {
   try {
     const { tag, search, page = 1, perPage = 10 } = req.query;
+    const userId = req.user._id;
 
-    // Будуємо запит через ланцюжок методів Mongoose
-    let query = Note.find();
+    // Базовий фільтр для поточного користувача
+    const filter = { userId };
 
     // Фільтрація по тегу
     if (tag) {
-      query = query.where('tag').equals(tag);
+      filter.tag = tag;
     }
 
-    // Пошук по title та content
+    // Пошук по тексту (якщо є text-індекс)
     if (search) {
-      query = query.or([
-        { title: { $regex: search, $options: 'i' } },
-        { content: { $regex: search, $options: 'i' } },
-      ]);
+      filter.$text = { $search: search };
     }
 
-    // Пагінація
     const skip = (page - 1) * perPage;
 
     // Паралельне виконання запитів
     const [notes, totalNotes] = await Promise.all([
-      query.clone().skip(skip).limit(perPage).sort({ createdAt: -1 }), // Сортування за датою створення (новіші спочатку)
-      Note.countDocuments(query.getFilter()),
+      Note.find(filter).skip(skip).limit(perPage).sort({ createdAt: -1 }),
+      Note.countDocuments(filter),
     ]);
 
     res.status(200).json({
@@ -43,85 +40,78 @@ export const getAllNotes = async (req, res, next) => {
   }
 };
 
-// GET /notes/:noteId - Отримати одну нотатку за id
+// GET /notes/:noteId
 export const getNoteById = async (req, res, next) => {
   try {
     const { noteId } = req.params;
-    const note = await Note.findById(noteId);
+    const userId = req.user._id;
 
-    if (!note) {
-      return next(createError(404, 'Note not found'));
-    }
+    const note = await Note.findOne({ _id: noteId, userId });
+    if (!note) return next(createError(404, 'Note not found'));
 
     res.status(200).json(note);
   } catch (error) {
     if (error.name === 'CastError') {
       return next(createError(400, 'Invalid note ID'));
     }
-
     next(createError(500, error.message));
   }
 };
 
-// POST /notes - Створити нову нотатку
+// POST /notes
 export const createNote = async (req, res, next) => {
   try {
     const { title, content, tag } = req.body;
+    const userId = req.user._id;
 
-    if (!title) {
-      return next(createError(400, 'Title is required'));
-    }
+    if (!title) return next(createError(400, 'Title is required'));
 
-    const newNote = await Note.create({ title, content, tag });
+    const newNote = await Note.create({ title, content, tag, userId });
     res.status(201).json(newNote);
   } catch (error) {
     next(createError(500, error.message));
   }
 };
 
-// PATCH /notes/:noteId - Оновити нотатку
+// PATCH /notes/:noteId
 export const updateNote = async (req, res, next) => {
   try {
     const { noteId } = req.params;
+    const userId = req.user._id;
     const { title, content, tag } = req.body;
 
-    const updatedNote = await Note.findByIdAndUpdate(
-      noteId,
+    const updatedNote = await Note.findOneAndUpdate(
+      { _id: noteId, userId },
       { title, content, tag },
       { new: true, runValidators: true },
     );
 
-    if (!updatedNote) {
-      return next(createError(404, 'Note not found'));
-    }
+    if (!updatedNote) return next(createError(404, 'Note not found'));
 
     res.status(200).json(updatedNote);
   } catch (error) {
     if (error.name === 'CastError') {
       return next(createError(400, 'Invalid note ID'));
     }
-
     next(createError(500, error.message));
   }
 };
 
-// DELETE /notes/:noteId - Видалити нотатку
+// DELETE /notes/:noteId
 export const deleteNote = async (req, res, next) => {
   try {
     const { noteId } = req.params;
+    const userId = req.user._id;
 
-    const deletedNote = await Note.findByIdAndDelete(noteId);
+    const deletedNote = await Note.findOneAndDelete({ _id: noteId, userId });
 
-    if (!deletedNote) {
-      return next(createError(404, 'Note not found'));
-    }
+    if (!deletedNote) return next(createError(404, 'Note not found'));
 
     res.status(200).json(deletedNote);
   } catch (error) {
     if (error.name === 'CastError') {
       return next(createError(400, 'Invalid note ID'));
     }
-
     next(createError(500, error.message));
   }
 };
