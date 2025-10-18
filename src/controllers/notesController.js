@@ -1,13 +1,15 @@
 import createError from 'http-errors';
 import { Note } from '../models/note.js';
 
-// GET /notes - Отримати список нотаток користувача
+/* -------------------------------------------
+   GET /notes - Отримати список нотаток користувача
+------------------------------------------- */
 export const getAllNotes = async (req, res, next) => {
   try {
     const { tag, search, page = 1, perPage = 10 } = req.query;
     const userId = req.user._id;
 
-    // Базовий фільтр для поточного користувача
+    // Базовий фільтр — тільки нотатки користувача
     const filter = { userId };
 
     // Фільтрація по тегу
@@ -15,22 +17,24 @@ export const getAllNotes = async (req, res, next) => {
       filter.tag = tag;
     }
 
-    // Пошук по тексту (якщо є text-індекс)
+    // Пошук по тексту через $text (якщо індекс є)
     if (search) {
       filter.$text = { $search: search };
     }
 
     const skip = (page - 1) * perPage;
 
-    // Паралельне виконання запитів
     const [notes, totalNotes] = await Promise.all([
-      Note.find(filter).skip(skip).limit(perPage).sort({ createdAt: -1 }),
+      Note.find(filter)
+        .skip(skip)
+        .limit(Number(perPage))
+        .sort({ createdAt: -1 }),
       Note.countDocuments(filter),
     ]);
 
     res.status(200).json({
-      page,
-      perPage,
+      page: Number(page),
+      perPage: Number(perPage),
       totalNotes,
       totalPages: Math.ceil(totalNotes / perPage),
       notes,
@@ -40,7 +44,9 @@ export const getAllNotes = async (req, res, next) => {
   }
 };
 
-// GET /notes/:noteId
+/* -------------------------------------------
+   GET /notes/:noteId - Отримати одну нотатку
+------------------------------------------- */
 export const getNoteById = async (req, res, next) => {
   try {
     const { noteId } = req.params;
@@ -58,13 +64,13 @@ export const getNoteById = async (req, res, next) => {
   }
 };
 
-// POST /notes
+/* -------------------------------------------
+   POST /notes - Створити нову нотатку
+------------------------------------------- */
 export const createNote = async (req, res, next) => {
   try {
     const { title, content, tag } = req.body;
     const userId = req.user._id;
-
-    if (!title) return next(createError(400, 'Title is required'));
 
     const newNote = await Note.create({ title, content, tag, userId });
     res.status(201).json(newNote);
@@ -73,7 +79,9 @@ export const createNote = async (req, res, next) => {
   }
 };
 
-// PATCH /notes/:noteId
+/* -------------------------------------------
+   PATCH /notes/:noteId - Оновити нотатку
+------------------------------------------- */
 export const updateNote = async (req, res, next) => {
   try {
     const { noteId } = req.params;
@@ -97,14 +105,15 @@ export const updateNote = async (req, res, next) => {
   }
 };
 
-// DELETE /notes/:noteId
+/* -------------------------------------------
+   DELETE /notes/:noteId - Видалити нотатку
+------------------------------------------- */
 export const deleteNote = async (req, res, next) => {
   try {
     const { noteId } = req.params;
     const userId = req.user._id;
 
     const deletedNote = await Note.findOneAndDelete({ _id: noteId, userId });
-
     if (!deletedNote) return next(createError(404, 'Note not found'));
 
     res.status(200).json(deletedNote);
