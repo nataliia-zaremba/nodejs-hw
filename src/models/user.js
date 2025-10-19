@@ -18,6 +18,10 @@ const userSchema = new Schema(
       type: String,
       required: true,
     },
+    avatar: {
+      type: String,
+      default: null,
+    },
   },
   {
     timestamps: true, // автоматично додає createdAt і updatedAt

@@ -6,6 +6,7 @@ import { errors } from 'celebrate';
 import { connectMongoDB } from './db/connectMongoDB.js';
 import notesRouter from './routes/notesRoutes.js';
 import authRouter from './routes/authRoutes.js';
+import userRouter from './routes/userRoutes.js';
 import { logger } from './middleware/logger.js';
 import { notFoundHandler } from './middleware/notFoundHandler.js';
 import { errorHandler } from './middleware/errorHandler.js';
@@ -22,6 +23,7 @@ app.use(cookieParser()); // парсимо cookies
 /* Маршрути */
 app.use(authRouter); // маршрути аутентифікації
 app.use(notesRouter); // маршрути нотаток (захищені через authenticate)
+app.use(userRouter); // маршрути користувача (завантаження аватара)
 
 /* Обробка помилок */
 app.use(notFoundHandler); // обробка 404
