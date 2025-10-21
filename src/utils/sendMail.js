@@ -1,6 +1,6 @@
 import nodemailer from 'nodemailer';
 
-export const sendEmail = async ({ to, subject, html }) => {
+export const sendEmail = async (options) => {
   const transporter = nodemailer.createTransport({
     host: process.env.SMTP_HOST,
     port: process.env.SMTP_PORT,
@@ -10,16 +10,11 @@ export const sendEmail = async ({ to, subject, html }) => {
     },
   });
 
-  try {
-    await transporter.sendMail({
-      from: process.env.SMTP_FROM,
-      to,
-      subject,
-      html,
-    });
-    return true;
-  } catch (error) {
-    console.error('Email sending error:', error);
-    return false;
-  }
+  // Встановлюємо from з env або з переданих опцій
+  const mailOptions = {
+    from: process.env.SMTP_FROM || options.from,
+    ...options,
+  };
+
+  return await transporter.sendMail(mailOptions);
 };

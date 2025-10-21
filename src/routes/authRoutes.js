@@ -5,10 +5,14 @@ import {
   loginUser,
   refreshUserSession,
   logoutUser,
+  requestResetEmail,
+  resetPassword,
 } from '../controllers/authController.js';
 import {
   registerUserSchema,
   loginUserSchema,
+  requestResetEmailSchema,
+  resetPasswordSchema,
 } from '../validations/authValidation.js';
 
 const router = express.Router();
@@ -24,5 +28,19 @@ router.post('/auth/refresh', refreshUserSession);
 
 // POST /auth/logout - Вихід користувача
 router.post('/auth/logout', logoutUser);
+
+// POST /auth/request-reset-email - Запит на скидання паролю через email
+router.post(
+  '/auth/request-reset-email',
+  celebrate(requestResetEmailSchema),
+  requestResetEmail,
+);
+
+// POST /auth/reset-password - Скидання паролю
+router.post(
+  '/auth/reset-password',
+  celebrate(resetPasswordSchema),
+  resetPassword,
+);
 
 export default router;

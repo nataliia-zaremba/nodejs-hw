@@ -20,7 +20,7 @@ const userSchema = new Schema(
     },
     avatar: {
       type: String,
-      default: null,
+      default: 'https://ac.goit.global/fullstack/react/default-avatar.jpg',
     },
   },
   {
@@ -28,19 +28,19 @@ const userSchema = new Schema(
   },
 );
 
-// Метод toJSON для видалення пароля з відповіді
-userSchema.methods.toJSON = function () {
-  const obj = this.toObject();
-  delete obj.password;
-  return obj;
-};
-
-// Хук pre('save') для встановлення username за замовчуванням
+// Хук pre('save') — встановлює username таким самим, як email, якщо він не вказаний
 userSchema.pre('save', function (next) {
   if (!this.username) {
     this.username = this.email;
   }
   next();
 });
+
+// Метод toJSON для видалення пароля з відповіді
+userSchema.methods.toJSON = function () {
+  const obj = this.toObject();
+  delete obj.password;
+  return obj;
+};
 
 export const User = model('User', userSchema, 'users');
